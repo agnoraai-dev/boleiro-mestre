@@ -10,9 +10,9 @@ export default function PrivacyPage() {
       <article className="rounded-3xl bg-white p-6 shadow-pitch">
         <h1 className="text-4xl font-black text-ink">Politica de Privacidade</h1>
         <div className="mt-6 grid gap-4 font-semibold leading-relaxed text-ink/70">
-          <p>Coletamos email e identificador de usuario quando voce cria uma conta via Supabase Auth.</p>
-          <p>Os palpites salvos ficam vinculados ao seu usuario e protegidos por politicas de seguranca em nivel de linha no Supabase.</p>
-          <p>O componente de anuncios esta apenas preparado para AdSense. Anuncios reais devem ser ativados somente apos configurar o cliente e revisar consentimentos aplicaveis.</p>
+          <p>Coletamos email e identificador de usuario quando voce cria uma conta.</p>
+          <p>Os palpites salvos ficam vinculados ao seu perfil e sao protegidos por controles de acesso da plataforma.</p>
+          <p>Anuncios e parceiros de midia, quando ativados, devem respeitar consentimentos e regras de privacidade aplicaveis.</p>
         </div>
       </article>
     </section>

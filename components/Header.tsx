@@ -3,9 +3,9 @@ import { Menu } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 const navItems = [
-  { href: "/gerador", label: "Palpites da Copa" },
-  { href: "/meus-palpites", label: "Historico da Copa" },
-  { href: "/login", label: "Login" },
+  { href: "/gerador", label: "Gerador de palpites" },
+  { href: "/meus-palpites", label: "Meu bolao" },
+  { href: "/login", label: "Entrar" },
   { href: "/contato", label: "Contato" }
 ];
 

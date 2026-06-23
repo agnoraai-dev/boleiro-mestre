@@ -15,7 +15,7 @@ export function AuthPanel() {
     const supabase = createBrowserSupabaseClient();
 
     if (!supabase) {
-      setMessage("Configure o Supabase no .env.local para ativar login e cadastro.");
+      setMessage("A area de conta ainda nao esta ativa neste ambiente.");
       return;
     }
 
@@ -31,21 +31,21 @@ export function AuthPanel() {
       return;
     }
 
-    setMessage(mode === "login" ? "Login feito. Ja pode salvar seus palpites." : "Cadastro criado. Confira seu email se a confirmacao estiver ativa.");
+    setMessage(mode === "login" ? "Entrada confirmada. Ja pode salvar seus palpites." : "Conta criada. Confira seu email para concluir a confirmacao, se necessario.");
   }
 
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-pitch">
+    <div className="rounded-2xl bg-white p-6 shadow-pitch">
       {!isSupabaseConfigured ? (
-        <div className="mb-5 rounded-2xl bg-trophy/25 p-4 text-sm font-semibold text-field-dark">
-          Supabase ainda nao configurado. Preencha `.env.local` com URL e anon key para ativar autenticacao.
+        <div className="mb-5 rounded-lg bg-trophy/25 p-4 text-sm font-semibold text-field-dark">
+          A area de conta esta em preparacao. Enquanto isso, voce pode gerar palpites normalmente.
         </div>
       ) : null}
       <div className="grid gap-4">
         <label className="grid gap-2 text-sm font-bold text-field-dark">
           Email
           <input
-            className="rounded-2xl border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
+            className="rounded-lg border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
             onChange={(event) => setEmail(event.target.value)}
             placeholder="voce@email.com"
             type="email"
@@ -55,7 +55,7 @@ export function AuthPanel() {
         <label className="grid gap-2 text-sm font-bold text-field-dark">
           Senha
           <input
-            className="rounded-2xl border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
+            className="rounded-lg border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Minimo de 6 caracteres"
             type="password"
@@ -83,7 +83,7 @@ export function AuthPanel() {
           Criar conta
         </button>
       </div>
-      {message ? <p className="mt-4 rounded-2xl bg-field-dark/5 p-4 text-sm font-semibold text-field-dark">{message}</p> : null}
+      {message ? <p className="mt-4 rounded-lg bg-field-dark/5 p-4 text-sm font-semibold text-field-dark">{message}</p> : null}
     </div>
   );
 }

@@ -1,8 +1,25 @@
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Sparkles, Trophy } from "lucide-react";
+import { ArrowRight, CalendarDays, MapPin, ShieldCheck, Sparkles, Trophy } from "lucide-react";
 import { AdBanner } from "@/components/AdBanner";
+import { activeCompetition } from "@/lib/competitions";
+import { getUpcomingMatchesByCompetitionId } from "@/lib/matches";
+import { getTeam } from "@/lib/teams";
+
+const matchDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "short",
+  day: "2-digit",
+  month: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit"
+});
+
+export const dynamic = "force-dynamic";
 
 export default function HomePage() {
+  const nextMatch = getUpcomingMatchesByCompetitionId(activeCompetition.id, 1)[0];
+  const homeTeam = nextMatch ? getTeam(nextMatch.homeTeamName, activeCompetition.id) : getTeam("Portugal", activeCompetition.id);
+  const awayTeam = nextMatch ? getTeam(nextMatch.awayTeamName, activeCompetition.id) : getTeam("Uzbekistan", activeCompetition.id);
+
   return (
     <>
       <section className="bg-field-dark text-white">
@@ -10,41 +27,65 @@ export default function HomePage() {
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-black text-trophy">
               <Trophy className="size-4" aria-hidden="true" />
-              Copa 2026, resenha e palpite em um so lugar
+              Palpites de futebol para cada rodada
             </div>
             <h1 className="max-w-3xl text-5xl font-black leading-none tracking-normal sm:text-6xl lg:text-7xl">
               Boleiro Mestre
             </h1>
-            <p className="mt-6 max-w-2xl text-lg font-semibold leading-relaxed text-white/82">
-              Veja Jogos da Copa, escolha o confronto, receba probabilidades simplificadas, placar provavel e um comentario no clima de mesa redonda brasileira.
+            <p className="mt-6 max-w-2xl text-lg font-semibold leading-relaxed text-white/80">
+              Escolha o campeonato, veja os proximos jogos, gere placares provaveis e organize seus palpites em uma tabela clara.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link className="inline-flex items-center gap-2 rounded-full bg-trophy px-6 py-4 font-black text-ink transition hover:bg-yellow-300" href="/gerador">
-                Gerar palpite da Copa
+                Gerar palpite
                 <ArrowRight className="size-5" aria-hidden="true" />
               </Link>
               <Link className="inline-flex items-center rounded-full border border-white/20 px-6 py-4 font-black text-white transition hover:bg-white/10" href="/meus-palpites">
-                Meu historico da Copa
+                Meu bolao
               </Link>
             </div>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-white/8 p-5 shadow-pitch">
-            <div className="rounded-3xl bg-field p-6">
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-3xl bg-white p-5 text-ink">
-                <div>
-                  <p className="text-sm font-black text-field-dark">Brasil</p>
-                  <p className="text-6xl font-black">2</p>
+          <div className="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-pitch">
+            <div className="rounded-xl bg-field p-5">
+              <div className="rounded-lg bg-white p-5 text-ink">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs font-black uppercase text-field-dark">
+                  <span>{nextMatch?.stage ?? "Grupo K - rodada 2"}</span>
+                  <span>Proximo jogo</span>
                 </div>
-                <span className="text-2xl font-black text-field-dark">x</span>
-                <div className="text-right">
-                  <p className="text-sm font-black text-field-dark">Argentina</p>
-                  <p className="text-6xl font-black">1</p>
+                <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+                  <div>
+                    <p className="text-3xl" aria-hidden="true">
+                      {homeTeam.flag}
+                    </p>
+                    <p className="mt-2 text-sm font-black text-field-dark">{homeTeam.name}</p>
+                    <p className="text-5xl font-black">?</p>
+                  </div>
+                  <span className="text-2xl font-black text-field-dark">x</span>
+                  <div className="text-right">
+                    <p className="text-3xl" aria-hidden="true">
+                      {awayTeam.flag}
+                    </p>
+                    <p className="mt-2 text-sm font-black text-field-dark">{awayTeam.name}</p>
+                    <p className="text-5xl font-black">?</p>
+                  </div>
                 </div>
+                {nextMatch ? (
+                  <div className="mt-5 grid gap-2 text-sm font-bold text-ink/65">
+                    <span className="inline-flex items-center gap-2">
+                      <CalendarDays className="size-4 text-field" aria-hidden="true" />
+                      {matchDateFormatter.format(new Date(nextMatch.startsAt))}
+                    </span>
+                    <span className="inline-flex items-center gap-2">
+                      <MapPin className="size-4 text-field" aria-hidden="true" />
+                      {nextMatch.venue}
+                    </span>
+                  </div>
+                ) : null}
               </div>
-              <div className="mt-5 rounded-3xl bg-field-dark p-5 text-white">
+              <div className="mt-5 rounded-lg bg-field-dark p-5 text-white">
                 <p className="font-black text-trophy">Comentario da cabine</p>
                 <p className="mt-2 text-sm font-semibold leading-relaxed text-white/85">
-                  Jogo pegado, camisa pesada e chance de gol ate no grito da torcida. Aqui o palpite sai com fundamento e uma pitada de resenha.
+                  Escolha uma partida da agenda, gere o placar provavel e salve o palpite na tabela do bolao.
                 </p>
               </div>
             </div>
@@ -56,9 +97,9 @@ export default function HomePage() {
       </section>
       <section className="mx-auto grid max-w-6xl gap-4 px-4 py-12 md:grid-cols-3">
         {[
-          { icon: Sparkles, title: "IA na resenha", text: "Rota server-side pronta para gerar comentarios com modelo de IA." },
-          { icon: ShieldCheck, title: "Login com Supabase", text: "Auth e Postgres preparados para salvar palpites por usuario e competicao." },
-          { icon: Trophy, title: "Feito para Vercel", text: "App Router, env vars e estrutura pronta para deploy." }
+          { icon: Sparkles, title: "Analise do confronto", text: "Probabilidades, placar provavel e comentario em linguagem simples." },
+          { icon: ShieldCheck, title: "Bolao organizado", text: "Palpites salvos por campeonato, jogo, favorito e confianca." },
+          { icon: Trophy, title: "Multi-campeonato", text: "Estrutura pronta para Copa, Brasileirao, La Liga, Libertadores e mais." }
         ].map((item) => (
           <article className="rounded-3xl bg-white p-6 shadow-pitch" key={item.title}>
             <item.icon className="size-8 text-field" aria-hidden="true" />
