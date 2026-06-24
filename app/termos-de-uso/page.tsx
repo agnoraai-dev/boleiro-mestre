@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <LegalPage title="Termos de Uso">
-      <p>O Boleiro Mestre oferece palpites recreativos sobre jogos de futebol. As probabilidades e placares sao estimativas simplificadas e nao garantem resultados.</p>
-      <p>O usuario concorda em usar o site apenas para entretenimento, sem tratar os palpites como recomendacao financeira, aposta ou orientacao profissional.</p>
-      <p>Podemos ajustar funcionalidades, modelos de calculo e conteudo do site para melhorar a experiencia.</p>
+      <p>O Boleiro Mestre oferece palpites recreativos sobre jogos de futebol. As probabilidades e placares são estimativas simplificadas e não garantem resultados.</p>
+      <p>O usuário concorda em usar o site apenas para entretenimento, sem tratar os palpites como recomendação financeira, aposta ou orientação profissional.</p>
+      <p>Podemos ajustar funcionalidades, modelos de cálculo e conteúdo do site para melhorar a experiência.</p>
     </LegalPage>
   );
 }

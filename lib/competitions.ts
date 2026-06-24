@@ -63,9 +63,9 @@ export const competitions: Competition[] = [
   },
   {
     id: "12111111-1111-4111-8111-111111111111",
-    name: "Campeonato Brasileiro Serie A",
+    name: "Campeonato Brasileiro Série A",
     slug: "brasileirao-serie-a-2026",
-    shortName: "Brasileirao",
+    shortName: "Brasileirão",
     country: "Brasil",
     region: "CONMEBOL",
     kind: "domestic-league",
@@ -111,7 +111,7 @@ export const competitions: Competition[] = [
     name: "Copa Libertadores",
     slug: "copa-libertadores-2026",
     shortName: "Libertadores",
-    country: "America do Sul",
+    country: "América do Sul",
     region: "CONMEBOL",
     kind: "continental-cup",
     seasonLabel: "2026",
@@ -152,7 +152,7 @@ export const competitions: Competition[] = [
       { provider: "api-football", label: "API-Football", priority: 3, supports: ["fixtures", "teams", "standings", "scores", "odds"] }
     ],
     calendarWindows: [
-      { label: "Qualificatorias", startsAt: "2026-07-01", endsAt: "2026-08-31", status: "upcoming" },
+      { label: "Qualificatórias", startsAt: "2026-07-01", endsAt: "2026-08-31", status: "upcoming" },
       { label: "Fase de liga", startsAt: "2026-09-01", endsAt: "2027-01-31", status: "upcoming" },
       { label: "Mata-mata", startsAt: "2027-02-01", endsAt: "2027-05-31", status: "upcoming" }
     ]

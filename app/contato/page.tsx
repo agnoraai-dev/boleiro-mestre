@@ -18,7 +18,7 @@ export default function ContactPage() {
         </p>
         <form className="mt-6 grid gap-4">
           <input className="rounded-2xl border border-field-dark/15 px-4 py-3 outline-none ring-field/30 focus:ring-4" placeholder="Seu nome" />
-          <input className="rounded-2xl border border-field-dark/15 px-4 py-3 outline-none ring-field/30 focus:ring-4" placeholder="Seu email" type="email" />
+          <input className="rounded-2xl border border-field-dark/15 px-4 py-3 outline-none ring-field/30 focus:ring-4" placeholder="Seu e-mail" type="email" />
           <textarea className="min-h-36 rounded-2xl border border-field-dark/15 px-4 py-3 outline-none ring-field/30 focus:ring-4" placeholder="Mensagem" />
           <button className="rounded-full bg-field px-6 py-4 font-black text-white transition hover:bg-field-dark" type="button">
             Enviar mensagem

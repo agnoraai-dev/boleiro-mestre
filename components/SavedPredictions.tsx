@@ -18,14 +18,14 @@ export function SavedPredictions() {
     async function loadPredictions() {
       const supabase = createBrowserSupabaseClient();
       if (!supabase) {
-        setMessage("A area de conta ainda nao esta ativa neste ambiente.");
+        setMessage("A área de conta ainda está em preparação.");
         setLoading(false);
         return;
       }
 
       const userResult = await supabase.auth.getUser();
       if (!userResult.data.user) {
-        setMessage("Entre na sua conta para ver os palpites que voce salvou.");
+        setMessage("Entre na sua conta para ver os palpites que você salvou.");
         setLoading(false);
         return;
       }
@@ -73,7 +73,7 @@ export function SavedPredictions() {
     <div className="overflow-hidden rounded-3xl border border-emerald-800/55 bg-slate-950/75 shadow-pitch">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-900/70 px-5 py-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-widest text-trophy">Tabela do bolao</p>
+          <p className="text-xs font-black uppercase tracking-widest text-trophy">Tabela do bolão</p>
           <h2 className="text-2xl font-black text-white">Meus palpites</h2>
         </div>
         <span className="inline-flex items-center gap-2 rounded-full bg-emerald-900/80 px-3 py-2 text-sm font-black text-trophy">
@@ -90,8 +90,8 @@ export function SavedPredictions() {
               <th className="px-5 py-3">Jogo</th>
               <th className="px-5 py-3">Placar</th>
               <th className="px-5 py-3">Favorito</th>
-              <th className="px-5 py-3">Confianca</th>
-              <th className="px-5 py-3">Comentario</th>
+              <th className="px-5 py-3">Confiança</th>
+              <th className="px-5 py-3">Comentário</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-emerald-900/70">
@@ -137,7 +137,7 @@ function PredictionRow({ item }: { item: SavedPrediction }) {
           <span className="text-trophy">x</span>
           <TeamChip flag={awayTeam.flag} name={item.team_b} />
         </div>
-        <p className="mt-2 text-xs font-bold text-slate-500">{match ? `${match.stage} - ${match.city}` : "Confronto montado"}</p>
+        <p className="mt-2 text-xs font-bold text-slate-500">{match ? `${match.stage} - ${match.city}` : "Partida sem agenda vinculada"}</p>
       </td>
       <td className="whitespace-nowrap px-5 py-4">
         <span className="inline-flex items-center gap-2 rounded-full bg-trophy px-3 py-2 text-sm font-black text-emerald-950">

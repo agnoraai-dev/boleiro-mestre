@@ -13,14 +13,14 @@ export default function GeneratorPage() {
     <section className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-8">
         <p className="text-sm font-black uppercase tracking-widest text-trophy">Palpites de futebol</p>
-        <h1 className="mt-2 text-4xl font-black text-white">Gere palpites para os proximos jogos</h1>
+        <h1 className="mt-2 text-4xl font-black text-white">Gere palpites para os próximos jogos</h1>
         <p className="mt-3 max-w-2xl font-semibold leading-relaxed text-slate-300">
-          Escolha o campeonato, selecione uma partida ou monte um confronto e acompanhe o resultado previsto no seu bolao.
+          Escolha o campeonato, selecione uma partida real, ajuste as variáveis do jogo e gere o palpite para o seu bolão.
         </p>
       </div>
       <PredictionGenerator />
       <div className="mt-8">
-        <AdBanner label="Espaco para conteudo e parceiros" />
+        <AdBanner label="Espaço para conteúdo e parceiros" />
       </div>
     </section>
   );
