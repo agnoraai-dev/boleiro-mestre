@@ -35,27 +35,27 @@ export function AuthPanel() {
   }
 
   return (
-    <div className="rounded-3xl bg-white p-6 shadow-pitch">
+    <div className="rounded-3xl border border-emerald-800/55 bg-emerald-950/55 p-6 shadow-pitch">
       {!isSupabaseConfigured ? (
-        <div className="mb-5 rounded-2xl bg-trophy/25 p-4 text-sm font-semibold text-field-dark">
+        <div className="mb-5 rounded-2xl border border-trophy/30 bg-trophy/15 p-4 text-sm font-semibold text-trophy">
           Supabase ainda nao configurado. Preencha `.env.local` com URL e anon key para ativar autenticacao.
         </div>
       ) : null}
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-bold text-field-dark">
+        <label className="grid gap-2 text-sm font-bold text-emerald-300">
           Email
           <input
-            className="rounded-2xl border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
+            className="rounded-2xl border border-emerald-800/70 bg-slate-950/80 px-4 py-3 text-white outline-none ring-trophy/25 transition focus:border-trophy focus:ring-4"
             onChange={(event) => setEmail(event.target.value)}
             placeholder="voce@email.com"
             type="email"
             value={email}
           />
         </label>
-        <label className="grid gap-2 text-sm font-bold text-field-dark">
+        <label className="grid gap-2 text-sm font-bold text-emerald-300">
           Senha
           <input
-            className="rounded-2xl border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
+            className="rounded-2xl border border-emerald-800/70 bg-slate-950/80 px-4 py-3 text-white outline-none ring-trophy/25 transition focus:border-trophy focus:ring-4"
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Minimo de 6 caracteres"
             type="password"
@@ -65,7 +65,7 @@ export function AuthPanel() {
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-field px-5 py-3 font-black text-white transition hover:bg-field-dark disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-800 px-5 py-3 font-black text-white transition hover:bg-emerald-700 disabled:opacity-60"
           disabled={loading}
           onClick={() => handleAuth("login")}
           type="button"
@@ -74,7 +74,7 @@ export function AuthPanel() {
           Entrar
         </button>
         <button
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-trophy px-5 py-3 font-black text-ink transition hover:bg-yellow-300 disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-trophy to-yellow-400 px-5 py-3 font-black text-emerald-950 transition hover:from-yellow-300 hover:to-trophy disabled:opacity-60"
           disabled={loading}
           onClick={() => handleAuth("signup")}
           type="button"
@@ -83,7 +83,7 @@ export function AuthPanel() {
           Criar conta
         </button>
       </div>
-      {message ? <p className="mt-4 rounded-2xl bg-field-dark/5 p-4 text-sm font-semibold text-field-dark">{message}</p> : null}
+      {message ? <p className="mt-4 rounded-2xl border border-emerald-800/50 bg-slate-950/70 p-4 text-sm font-semibold text-emerald-200">{message}</p> : null}
     </div>
   );
 }
