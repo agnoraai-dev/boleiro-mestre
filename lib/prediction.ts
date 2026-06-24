@@ -62,5 +62,5 @@ export function buildFallbackCommentary(teamA: Team, teamB: Team, scoreA: number
   const winner =
     scoreA === scoreB ? "empate com cara de jogo nervoso" : scoreA > scoreB ? `vitoria do ${teamA.name}` : `vitoria do ${teamB.name}`;
 
-  return `O Boleiro Mestre cravou ${teamA.name} ${scoreA} x ${scoreB} ${teamB.name}: ${winner}. Vai ter ${teamA.flair} de um lado, ${teamB.flair} do outro, e aquele clima de Copa em que ate lateral vira lance perigoso.`;
+  return `O Boleiro Mestre cravou ${teamA.name} ${scoreA} x ${scoreB} ${teamB.name}: ${winner}. Vai ter ${teamA.flair} de um lado, ${teamB.flair} do outro, e aquele jogo em que ate lateral pode virar lance perigoso.`;
 }

@@ -15,7 +15,7 @@ export function AuthPanel() {
     const supabase = createBrowserSupabaseClient();
 
     if (!supabase) {
-      setMessage("Configure o Supabase no .env.local para ativar login e cadastro.");
+      setMessage("A area de conta ainda nao esta ativa neste ambiente.");
       return;
     }
 
@@ -31,14 +31,14 @@ export function AuthPanel() {
       return;
     }
 
-    setMessage(mode === "login" ? "Login feito. Ja pode salvar seus palpites." : "Cadastro criado. Confira seu email se a confirmacao estiver ativa.");
+    setMessage(mode === "login" ? "Entrada confirmada. Ja pode salvar seus palpites." : "Conta criada. Confira seu email para concluir a confirmacao, se necessario.");
   }
 
   return (
     <div className="rounded-3xl border border-emerald-800/55 bg-emerald-950/55 p-6 shadow-pitch">
       {!isSupabaseConfigured ? (
         <div className="mb-5 rounded-2xl border border-trophy/30 bg-trophy/15 p-4 text-sm font-semibold text-trophy">
-          Supabase ainda nao configurado. Preencha `.env.local` com URL e anon key para ativar autenticacao.
+          A area de conta esta em preparacao. Enquanto isso, voce pode gerar palpites normalmente.
         </div>
       ) : null}
       <div className="grid gap-4">

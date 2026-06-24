@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     default: "Boleiro Mestre",
     template: "%s | Boleiro Mestre"
   },
-  description: "Gerador descontraido de palpites da Copa do Mundo 2026.",
-  metadataBase: new URL("https://boleiro-mestre.vercel.app")
+  description: "Gerador de palpites para futebol, campeonatos e boloes.",
+  metadataBase: new URL("https://www.boleiromestre.com.br")
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

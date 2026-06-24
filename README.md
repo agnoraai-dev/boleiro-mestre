@@ -1,8 +1,21 @@
 # Boleiro Mestre
 
-Projeto Next.js com TypeScript, Tailwind CSS, App Router, Supabase Auth/Postgres e rota server-side para comentarios com IA.
+Plataforma Next.js para gerar palpites de futebol, organizar boloes e acompanhar previsoes por campeonato.
 
-O MVP esta focado na Copa do Mundo 2026 (`copa-do-mundo-2026`), mas o dominio usa `competitions`, `teams`, `matches` e `predictions` para permitir novos campeonatos depois, como Brasileirao, Libertadores, Champions League e jogos avulsos.
+O dominio usa `competitions`, `teams`, `matches` e `predictions` para receber Copa do Mundo, Brasileirao, Libertadores, La Liga, Champions League e outros calendarios.
+
+## Dados reais de jogos
+
+O app ja tem uma agenda local da Copa 2026 para operar enquanto as integracoes oficiais nao estao conectadas. Para producao, ligue uma API em rota server-side e grave/normalize os dados nas tabelas `teams` e `matches`.
+
+APIs indicadas:
+
+- [football-data.org](https://www.football-data.org/): melhor primeira escolha para a primeira integracao. Tem cobertura de FIFA World Cup, Campeonato Brasileiro Serie A, La Liga e Copa Libertadores, com filtros de partidas por `dateFrom`/`dateTo` e token via `X-Auth-Token`.
+- [Sportmonks Football API](https://docs.sportmonks.com/v3/endpoints-and-entities/endpoints/fixtures): boa para produto mais completo, com fixtures por data/range, livescores, estatisticas e includes como venue, participants e scores.
+- [API-Football](https://www.api-football.com/documentation-v3): alternativa forte para fixtures, standings e eventos ao vivo, geralmente usada via API-SPORTS/RapidAPI.
+- [TheSportsDB](https://www.thesportsdb.com/api.php): util para dados esportivos e artes em JSON, mas valide cobertura e limites antes de depender dela para agenda oficial.
+
+Nunca chame essas APIs direto do navegador com token privado. Crie uma rota em `app/api/*`, normalize o retorno para o tipo `Match` e use a agenda local como fallback quando a API estiver indisponivel.
 
 ## Rodando localmente
 
@@ -24,6 +37,6 @@ O arquivo `database/api_football_schema.sql` contem o DDL relacional para a base
 
 Configure `API_FOOTBALL_KEY`, `DATABASE_URL`, `API_FOOTBALL_LEAGUE_ID`, `API_FOOTBALL_SEASON` e, opcionalmente, `CRON_SECRET` no painel da Vercel. O `vercel.json` agenda a execucao em `0 * * * *`.
 
-## Deploy
+## Publicacao
 
-O projeto esta pronto para Vercel. Cadastre as variaveis de ambiente do arquivo `.env.example` no painel do projeto.
+Cadastre as variaveis de ambiente do arquivo `.env.example` no ambiente de hospedagem escolhido antes de publicar.
