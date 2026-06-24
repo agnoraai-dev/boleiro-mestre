@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     default: "Boleiro Mestre",
     template: "%s | Boleiro Mestre"
   },
-  description: "Gerador de palpites para futebol, campeonatos e boloes.",
+  description: "Gerador de palpites para futebol, campeonatos e bolões.",
   metadataBase: new URL("https://www.boleiromestre.com.br")
 };
 

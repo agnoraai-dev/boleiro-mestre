@@ -15,7 +15,7 @@ export function AuthPanel() {
     const supabase = createBrowserSupabaseClient();
 
     if (!supabase) {
-      setMessage("A area de conta ainda nao esta ativa neste ambiente.");
+      setMessage("A área de conta ainda não está ativa neste ambiente.");
       return;
     }
 
@@ -31,23 +31,23 @@ export function AuthPanel() {
       return;
     }
 
-    setMessage(mode === "login" ? "Entrada confirmada. Ja pode salvar seus palpites." : "Conta criada. Confira seu email para concluir a confirmacao, se necessario.");
+    setMessage(mode === "login" ? "Entrada confirmada. Já pode salvar seus palpites." : "Conta criada. Confira seu e-mail para concluir a confirmação, se necessário.");
   }
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-pitch">
       {!isSupabaseConfigured ? (
         <div className="mb-5 rounded-lg bg-trophy/25 p-4 text-sm font-semibold text-field-dark">
-          A area de conta esta em preparacao. Enquanto isso, voce pode gerar palpites normalmente.
+          A área de conta está em preparação. Enquanto isso, você pode gerar palpites normalmente.
         </div>
       ) : null}
       <div className="grid gap-4">
         <label className="grid gap-2 text-sm font-bold text-field-dark">
-          Email
+          E-mail
           <input
             className="rounded-lg border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="voce@email.com"
+            placeholder="seu@email.com"
             type="email"
             value={email}
           />
@@ -57,7 +57,7 @@ export function AuthPanel() {
           <input
             className="rounded-lg border border-field-dark/15 px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Minimo de 6 caracteres"
+            placeholder="Mínimo de 6 caracteres"
             type="password"
             value={password}
           />

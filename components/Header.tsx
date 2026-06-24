@@ -4,7 +4,7 @@ import { Logo } from "@/components/Logo";
 
 const navItems = [
   { href: "/gerador", label: "Gerador de palpites" },
-  { href: "/meus-palpites", label: "Meu bolao" },
+  { href: "/meus-palpites", label: "Meu bolão" },
   { href: "/login", label: "Entrar" },
   { href: "/contato", label: "Contato" }
 ];

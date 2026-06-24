@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Bot, CalendarDays, Database, MapPin, Save, Shuffle, Trophy } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Bot, CalendarDays, Database, MapPin, Save, SlidersHorizontal, Trophy } from "lucide-react";
 import { activeCompetition, getCompetitionById, getFeaturedCompetitions, getPrimaryDataSource, type Competition } from "@/lib/competitions";
 import { getMatchById, getMatchesByCompetitionId, getUpcomingMatchesByCompetitionId, type Match } from "@/lib/matches";
-import { calculatePrediction, type PredictionResult } from "@/lib/prediction";
+import { calculatePrediction, defaultPredictionTuning, type GameRhythm, type PredictionResult, type PredictionTuning } from "@/lib/prediction";
 import { createBrowserSupabaseClient } from "@/lib/supabase";
-import { getTeam, getTeamsByCompetitionId, type Team } from "@/lib/teams";
+import { getTeam, type Team } from "@/lib/teams";
 import { StatBar } from "@/components/StatBar";
 
 const matchDateFormatter = new Intl.DateTimeFormat("pt-BR", {
@@ -22,80 +22,100 @@ const calendarDateFormatter = new Intl.DateTimeFormat("pt-BR", {
   month: "short"
 });
 
-function buildInitialPrediction(competition: Competition) {
-  const competitionMatches = getMatchesByCompetitionId(competition.id);
-  const firstMatch = getUpcomingMatchesByCompetitionId(competition.id, 1)[0] ?? competitionMatches[0];
-  const competitionTeams = getTeamsByCompetitionId(competition.id);
-  const firstTeam = getTeam(firstMatch?.homeTeamName ?? competitionTeams[0]?.name ?? "Brasil", competition.id);
-  const secondTeam = getTeam(firstMatch?.awayTeamName ?? competitionTeams[1]?.name ?? "Argentina", competition.id);
+const rhythmOptions: Array<{ value: GameRhythm; label: string }> = [
+  { value: "balanced", label: "Equilibrado" },
+  { value: "open", label: "Aberto" },
+  { value: "locked", label: "Truncado" }
+];
 
-  return {
-    match: firstMatch,
-    teamA: firstTeam.name,
-    teamB: secondTeam.name,
-    prediction: calculatePrediction(firstTeam, secondTeam, competition.slug, firstMatch?.id)
-  };
+function formatSignedValue(value: number) {
+  if (value === 0) {
+    return "Neutro";
+  }
+
+  return value > 0 ? `+${value}` : `${value}`;
+}
+
+function getInitialMatch(competition: Competition) {
+  const competitionMatches = getMatchesByCompetitionId(competition.id);
+  return getUpcomingMatchesByCompetitionId(competition.id, 1)[0] ?? competitionMatches[0];
+}
+
+function buildMatchPrediction(competition: Competition, match: Match | undefined, tuning: PredictionTuning) {
+  if (!match) {
+    return null;
+  }
+
+  return calculatePrediction(
+    getTeam(match.homeTeamName, competition.id),
+    getTeam(match.awayTeamName, competition.id),
+    competition.slug,
+    match.id,
+    tuning
+  );
 }
 
 export function PredictionGenerator() {
   const competitionOptions = useMemo(() => getFeaturedCompetitions(), []);
+  const initialMatch = useMemo(() => getInitialMatch(activeCompetition), []);
   const [selectedCompetitionId, setSelectedCompetitionId] = useState(activeCompetition.id);
   const competition = getCompetitionById(selectedCompetitionId) ?? activeCompetition;
-  const competitionTeams = useMemo(() => getTeamsByCompetitionId(competition.id), [competition.id]);
   const competitionMatches = useMemo(() => getMatchesByCompetitionId(competition.id), [competition.id]);
   const upcomingMatches = useMemo(() => getUpcomingMatchesByCompetitionId(competition.id, 8), [competition.id]);
   const featuredMatches = upcomingMatches.length > 0 ? upcomingMatches : competitionMatches.slice(0, 8);
-  const initial = useMemo(() => buildInitialPrediction(competition), [competition]);
-  const [selectedMatchId, setSelectedMatchId] = useState(initial.match?.id ?? "custom");
-  const [teamA, setTeamA] = useState(initial.teamA);
-  const [teamB, setTeamB] = useState(initial.teamB);
-  const [prediction, setPrediction] = useState<PredictionResult>(() => initial.prediction);
+  const [selectedMatchId, setSelectedMatchId] = useState(initialMatch?.id ?? "");
+  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
+  const [tuning, setTuning] = useState<PredictionTuning>(defaultPredictionTuning);
   const [loadingAi, setLoadingAi] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  const availableTeamB = useMemo(() => competitionTeams.filter((team) => team.name !== teamA), [competitionTeams, teamA]);
-  const selectedMatch = useMemo(() => (selectedMatchId === "custom" ? undefined : getMatchById(selectedMatchId)), [selectedMatchId]);
-  const predictionTeamA = getTeam(prediction.teamA, competition.id);
-  const predictionTeamB = getTeam(prediction.teamB, competition.id);
+  const selectedMatch = useMemo(() => (selectedMatchId ? getMatchById(selectedMatchId) : undefined), [selectedMatchId]);
   const primarySource = getPrimaryDataSource(competition);
   const activeCalendarWindow = competition.calendarWindows.find((window) => window.status === "active") ?? competition.calendarWindows[0];
 
-  useEffect(() => {
-    if (teamA === teamB) {
-      setTeamB(availableTeamB[0]?.name ?? competitionTeams[1]?.name ?? teamB);
-    }
-  }, [availableTeamB, competitionTeams, teamA, teamB]);
-
   function selectCompetition(competitionId: string) {
     const nextCompetition = getCompetitionById(competitionId) ?? activeCompetition;
-    const nextInitial = buildInitialPrediction(nextCompetition);
+    const nextMatch = getInitialMatch(nextCompetition);
     setSelectedCompetitionId(nextCompetition.id);
-    setSelectedMatchId(nextInitial.match?.id ?? "custom");
-    setTeamA(nextInitial.teamA);
-    setTeamB(nextInitial.teamB);
-    setPrediction(nextInitial.prediction);
+    setSelectedMatchId(nextMatch?.id ?? "");
+    setPrediction(null);
     setMessage("");
   }
 
   function selectMatch(matchId: string) {
-    setSelectedMatchId(matchId);
     const match = getMatchById(matchId);
-    if (match) {
-      setTeamA(match.homeTeamName);
-      setTeamB(match.awayTeamName);
-      setPrediction(calculatePrediction(getTeam(match.homeTeamName, competition.id), getTeam(match.awayTeamName, competition.id), competition.slug, match.id));
+    if (!match) {
+      setSelectedMatchId("");
+      setPrediction(null);
+      setMessage("Selecione uma partida real da agenda.");
+      return;
     }
+
+    setSelectedMatchId(match.id);
+    setPrediction(null);
+    setMessage("");
+  }
+
+  function updateTuning<Key extends keyof PredictionTuning>(key: Key, value: PredictionTuning[Key]) {
+    setTuning((current) => ({ ...current, [key]: value }));
+    setPrediction(null);
+    setMessage("");
   }
 
   async function generatePrediction() {
     setMessage("");
-    const basePrediction = calculatePrediction(
-      getTeam(teamA, competition.id),
-      getTeam(teamB, competition.id),
-      competition.slug,
-      selectedMatchId === "custom" ? undefined : selectedMatchId
-    );
+    if (!selectedMatch) {
+      setMessage("Selecione uma partida real da agenda para gerar o palpite.");
+      return;
+    }
+
+    const basePrediction = buildMatchPrediction(competition, selectedMatch, tuning);
+    if (!basePrediction) {
+      setMessage("Não foi possível gerar o palpite para essa partida.");
+      return;
+    }
+
     setPrediction(basePrediction);
     setLoadingAi(true);
 
@@ -116,26 +136,16 @@ export function PredictionGenerator() {
     }
   }
 
-  function randomizeTeams() {
-    if (competitionTeams.length < 2) {
+  async function savePrediction() {
+    setMessage("");
+    if (!prediction) {
+      setMessage("Gere um palpite para uma partida real antes de salvar.");
       return;
     }
 
-    const firstIndex = Math.floor(Math.random() * competitionTeams.length);
-    let secondIndex = Math.floor(Math.random() * competitionTeams.length);
-    if (secondIndex === firstIndex) {
-      secondIndex = (secondIndex + 1) % competitionTeams.length;
-    }
-    setSelectedMatchId("custom");
-    setTeamA(competitionTeams[firstIndex].name);
-    setTeamB(competitionTeams[secondIndex].name);
-  }
-
-  async function savePrediction() {
-    setMessage("");
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
-      setMessage("A area de conta ainda nao esta ativa neste ambiente.");
+      setMessage("A área de conta ainda não está ativa neste ambiente.");
       return;
     }
 
@@ -164,7 +174,7 @@ export function PredictionGenerator() {
     });
     setSaving(false);
 
-    setMessage(error ? error.message : "Palpite salvo no seu bolao.");
+    setMessage(error ? error.message : "Palpite salvo no seu bolão.");
   }
 
   return (
@@ -175,14 +185,6 @@ export function PredictionGenerator() {
             <p className="text-sm font-black uppercase text-field">{competition.shortName}</p>
             <h2 className="text-2xl font-black text-ink">Agenda de jogos</h2>
           </div>
-          <button
-            aria-label="Sortear times"
-            className="grid size-11 place-items-center rounded-full bg-field-dark text-white transition hover:bg-field"
-            onClick={randomizeTeams}
-            type="button"
-          >
-            <Shuffle className="size-5" aria-hidden="true" />
-          </button>
         </div>
         <label className="mb-5 grid gap-2 text-sm font-bold text-field-dark">
           Campeonato
@@ -212,9 +214,9 @@ export function PredictionGenerator() {
             <CalendarNotice competition={competition} sourceLabel={primarySource?.label ?? "fonte externa"} windowLabel={activeCalendarWindow?.label} />
           )}
         </div>
-        <div className="grid gap-4">
+        {competitionMatches.length > 0 ? (
           <label className="grid gap-2 text-sm font-bold text-field-dark">
-            Partida
+            Partida real
             <select
               className="rounded-lg border border-field-dark/15 bg-white px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
               onChange={(event) => selectMatch(event.target.value)}
@@ -226,35 +228,18 @@ export function PredictionGenerator() {
                   {match.awayTeamName} - {match.stage}
                 </option>
               ))}
-              <option value="custom">Montar confronto</option>
             </select>
           </label>
-          <TeamSelect
-            label="Mandante"
-            onChange={(value) => {
-              setSelectedMatchId("custom");
-              setTeamA(value);
-            }}
-            value={teamA}
-            options={competitionTeams}
-          />
-          <TeamSelect
-            label="Visitante"
-            onChange={(value) => {
-              setSelectedMatchId("custom");
-              setTeamB(value);
-            }}
-            value={teamB}
-            options={availableTeamB}
-          />
-        </div>
+        ) : null}
+        {selectedMatch ? <PredictionTuningPanel tuning={tuning} onUpdate={updateTuning} /> : null}
         <button
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-trophy px-5 py-4 font-black text-ink transition hover:bg-yellow-300"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-trophy px-5 py-4 font-black text-ink transition hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={!selectedMatch || loadingAi}
           onClick={generatePrediction}
           type="button"
         >
           <Bot className="size-5" aria-hidden="true" />
-          Gerar palpite
+          {loadingAi ? "Gerando análise..." : "Gerar palpite"}
         </button>
       </div>
 
@@ -262,7 +247,7 @@ export function PredictionGenerator() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-black uppercase text-trophy">Palpite do jogo</p>
-            <h2 className="mt-1 text-2xl font-black">Bolao organizado</h2>
+            <h2 className="mt-1 text-2xl font-black">Bolão organizado</h2>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm font-black text-white">
             <Trophy className="size-4 text-trophy" aria-hidden="true" />
@@ -284,32 +269,49 @@ export function PredictionGenerator() {
           <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold text-white/80">
             <span className="inline-flex items-center gap-2">
               <Database className="size-4 text-trophy" aria-hidden="true" />
-              Fonte prevista: {primarySource?.label ?? "catalogo de jogos"}
+              Fonte prevista: {primarySource?.label ?? "catálogo de jogos"}
             </span>
           </div>
         )}
-        <div className="mt-4 grid gap-4 rounded-xl bg-white/10 p-5 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-          <TeamScore team={predictionTeamA} score={prediction.scoreA} />
-          <span className="text-center text-2xl font-black text-trophy">x</span>
-          <TeamScore team={predictionTeamB} score={prediction.scoreB} alignRight />
-        </div>
-        <div className="mt-6 grid gap-4 rounded-xl bg-white p-5">
-          <StatBar label={`Vitoria ${prediction.teamA}`} value={prediction.probabilityA} />
-          <StatBar label="Empate" value={prediction.probabilityDraw} />
-          <StatBar label={`Vitoria ${prediction.teamB}`} value={prediction.probabilityB} />
-        </div>
-        <p className="mt-5 rounded-xl bg-white/10 p-5 text-base font-semibold leading-relaxed">
-          {loadingAi ? "Preparando analise do confronto..." : prediction.commentary}
-        </p>
-        <button
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-4 font-black text-field-dark transition hover:bg-trophy disabled:opacity-60"
-          disabled={saving}
-          onClick={savePrediction}
-          type="button"
-        >
-          <Save className="size-5" aria-hidden="true" />
-          Salvar palpite
-        </button>
+        {selectedMatch && !prediction ? (
+          <div className="mt-4 grid gap-4 rounded-xl bg-white/10 p-5 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+            <FixtureTeam team={getTeam(selectedMatch.homeTeamName, competition.id)} />
+            <span className="text-center text-2xl font-black text-trophy">x</span>
+            <FixtureTeam team={getTeam(selectedMatch.awayTeamName, competition.id)} alignRight />
+          </div>
+        ) : null}
+        {prediction ? (
+          <>
+            <div className="mt-4 grid gap-4 rounded-xl bg-white/10 p-5 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+              <TeamScore team={getTeam(prediction.teamA, competition.id)} score={prediction.scoreA} />
+              <span className="text-center text-2xl font-black text-trophy">x</span>
+              <TeamScore team={getTeam(prediction.teamB, competition.id)} score={prediction.scoreB} alignRight />
+            </div>
+            <div className="mt-6 grid gap-4 rounded-xl bg-white p-5">
+              <StatBar label={`Vitória ${prediction.teamA}`} value={prediction.probabilityA} />
+              <StatBar label="Empate" value={prediction.probabilityDraw} />
+              <StatBar label={`Vitória ${prediction.teamB}`} value={prediction.probabilityB} />
+            </div>
+            <p className="mt-5 rounded-xl bg-white/10 p-5 text-base font-semibold leading-relaxed">
+              {loadingAi ? "Preparando análise da partida..." : prediction.commentary}
+            </p>
+            <button
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-4 font-black text-field-dark transition hover:bg-trophy disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={saving || loadingAi}
+              onClick={savePrediction}
+              type="button"
+            >
+              <Save className="size-5" aria-hidden="true" />
+              Salvar palpite
+            </button>
+          </>
+        ) : (
+          <p className="mt-4 rounded-xl bg-white/10 p-5 text-base font-semibold leading-relaxed">
+            {selectedMatch
+              ? "Palpite ainda não gerado. Ajuste as variáveis e gere a previsão para liberar placar, probabilidades e comentário do bolão."
+              : "Escolha um campeonato com partidas reais carregadas para liberar o placar previsto, as probabilidades e o comentário do bolão."}
+          </p>
+        )}
         {message ? <p className="mt-4 rounded-2xl bg-white/10 p-4 text-sm font-bold text-white">{message}</p> : null}
       </div>
     </section>
@@ -321,9 +323,9 @@ function CalendarNotice({ competition, sourceLabel, windowLabel }: { competition
     <div className="rounded-lg border border-field-dark/10 bg-field/5 p-4 sm:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-black text-field-dark">Calendario preparado</p>
+          <p className="text-sm font-black text-field-dark">Calendário preparado</p>
           <p className="mt-2 text-sm font-semibold leading-relaxed text-ink/65">
-            {competition.shortName} esta no catalogo de competicoes. Quando a agenda vier da fonte de dados, os cards aparecem aqui automaticamente.
+            {competition.shortName} está no catálogo de competições. Assim que a agenda real for importada pela fonte de dados, os cards aparecerão aqui.
           </p>
         </div>
         <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black text-field-dark">
@@ -343,30 +345,120 @@ function CalendarNotice({ competition, sourceLabel, windowLabel }: { competition
   );
 }
 
+type TuningUpdater = <Key extends keyof PredictionTuning>(key: Key, value: PredictionTuning[Key]) => void;
+
+function PredictionTuningPanel({ tuning, onUpdate }: { tuning: PredictionTuning; onUpdate: TuningUpdater }) {
+  return (
+    <div className="mt-5 border-t border-field-dark/10 pt-5">
+      <div className="mb-4 flex items-center gap-2 text-sm font-black uppercase text-field-dark">
+        <SlidersHorizontal className="size-4 text-field" aria-hidden="true" />
+        Ajustes do palpite
+      </div>
+      <div className="grid gap-4">
+        <SliderControl
+          label="Momento do mandante"
+          max={10}
+          min={-10}
+          onChange={(value) => onUpdate("homeMomentum", value)}
+          value={tuning.homeMomentum}
+          valueLabel={formatSignedValue(tuning.homeMomentum)}
+        />
+        <SliderControl
+          label="Momento do visitante"
+          max={10}
+          min={-10}
+          onChange={(value) => onUpdate("awayMomentum", value)}
+          value={tuning.awayMomentum}
+          valueLabel={formatSignedValue(tuning.awayMomentum)}
+        />
+        <SliderControl
+          label="Mando de campo"
+          max={10}
+          min={0}
+          onChange={(value) => onUpdate("homeAdvantage", value)}
+          value={tuning.homeAdvantage}
+          valueLabel={`${tuning.homeAdvantage}/10`}
+        />
+        <div className="grid gap-2">
+          <span className="text-sm font-bold text-field-dark">Ritmo provável</span>
+          <div className="grid grid-cols-3 rounded-full bg-field-dark/10 p-1" role="group" aria-label="Ritmo provável">
+            {rhythmOptions.map((option) => (
+              <button
+                aria-pressed={tuning.gameRhythm === option.value}
+                className={`rounded-full px-3 py-2 text-xs font-black transition ${
+                  tuning.gameRhythm === option.value ? "bg-field-dark text-white shadow-sm" : "text-field-dark hover:bg-white/70"
+                }`}
+                key={option.value}
+                onClick={() => onUpdate("gameRhythm", option.value)}
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SliderControl({
+  label,
+  max,
+  min,
+  onChange,
+  value,
+  valueLabel
+}: {
+  label: string;
+  max: number;
+  min: number;
+  onChange: (value: number) => void;
+  value: number;
+  valueLabel: string;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-bold text-field-dark">
+      <span className="flex items-center justify-between gap-3">
+        <span>{label}</span>
+        <span className="rounded-full bg-field/10 px-2.5 py-1 text-xs font-black text-field-dark">{valueLabel}</span>
+      </span>
+      <input
+        className="h-2 w-full accent-field"
+        max={max}
+        min={min}
+        onChange={(event) => onChange(Number(event.target.value))}
+        type="range"
+        value={value}
+      />
+    </label>
+  );
+}
+
 function MatchCard({ match, selected, onSelect }: { match: Match; selected: boolean; onSelect: () => void }) {
   const homeTeam = getTeam(match.homeTeamName, match.competitionId);
   const awayTeam = getTeam(match.awayTeamName, match.competitionId);
 
   return (
     <button
-      className={`rounded-lg border p-4 text-left transition hover:border-field hover:bg-field/5 ${
+      className={`min-w-0 overflow-hidden rounded-lg border p-4 text-left transition hover:border-field hover:bg-field/5 ${
         selected ? "border-field bg-field/10 ring-2 ring-field/15" : "border-field-dark/10 bg-white"
       }`}
       onClick={onSelect}
       type="button"
     >
-      <div className="flex items-center justify-between gap-3 text-xs font-black uppercase text-ink/55">
-        <span>{match.stage}</span>
-        <span>{matchDateFormatter.format(new Date(match.startsAt))}</span>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 text-xs font-black uppercase text-ink/55">
+        <span className="min-w-0 leading-tight">{match.stage}</span>
+        <span className="whitespace-nowrap text-right leading-tight">{matchDateFormatter.format(new Date(match.startsAt))}</span>
       </div>
-      <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
         <CompactTeam team={homeTeam} />
         <span className="text-sm font-black text-field-dark">x</span>
         <CompactTeam team={awayTeam} alignRight />
       </div>
-      <p className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-ink/60">
-        <MapPin className="size-3.5 text-field" aria-hidden="true" />
-        {match.city}
+      <p className="mt-3 flex min-w-0 items-center gap-2 text-xs font-bold text-ink/60">
+        <MapPin className="size-3.5 shrink-0 text-field" aria-hidden="true" />
+        <span className="min-w-0 truncate">{match.city}</span>
       </p>
     </button>
   );
@@ -374,31 +466,25 @@ function MatchCard({ match, selected, onSelect }: { match: Match; selected: bool
 
 function CompactTeam({ team, alignRight = false }: { team: Team; alignRight?: boolean }) {
   return (
-    <div className={alignRight ? "text-right" : ""}>
-      <span className="text-2xl" aria-hidden="true">
+    <div className={`min-w-0 ${alignRight ? "text-right" : ""}`}>
+      <span className="block text-2xl leading-none" aria-hidden="true">
         {team.flag}
       </span>
-      <p className="mt-1 truncate text-sm font-black text-ink">{team.name}</p>
+      <p className="mt-1 min-w-0 break-words text-sm font-black leading-tight text-ink" title={team.name}>
+        {team.name}
+      </p>
     </div>
   );
 }
 
-function TeamSelect({ label, value, options, onChange }: { label: string; value: string; options: Team[]; onChange: (value: string) => void }) {
+function FixtureTeam({ team, alignRight = false }: { team: Team; alignRight?: boolean }) {
   return (
-    <label className="grid gap-2 text-sm font-bold text-field-dark">
-      {label}
-      <select
-        className="rounded-lg border border-field-dark/15 bg-white px-4 py-3 text-ink outline-none ring-field/30 transition focus:ring-4"
-        onChange={(event) => onChange(event.target.value)}
-        value={value}
-      >
-        {options.map((option) => (
-          <option key={option.id} value={option.name}>
-            {option.flag} {option.name}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className={alignRight ? "text-left sm:text-right" : ""}>
+      <p className="text-lg font-black">
+        <span aria-hidden="true">{team.flag}</span> {team.name}
+      </p>
+      <p className="mt-1 text-sm font-bold text-white/70">Aguardando palpite</p>
+    </div>
   );
 }
 

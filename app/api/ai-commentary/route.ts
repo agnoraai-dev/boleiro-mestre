@@ -13,13 +13,20 @@ type CommentaryPayload = {
   probabilityA: number;
   probabilityDraw: number;
   probabilityB: number;
+  tuningSummary?: string;
 };
 
 export async function POST(request: Request) {
   const payload = (await request.json()) as CommentaryPayload;
   const competition = getCompetitionBySlug(payload.competitionSlug);
   const competitionId = competition?.id ?? payload.competitionId;
-  const fallback = buildFallbackCommentary(getTeam(payload.teamA, competitionId), getTeam(payload.teamB, competitionId), payload.scoreA, payload.scoreB);
+  const fallback = buildFallbackCommentary(
+    getTeam(payload.teamA, competitionId),
+    getTeam(payload.teamB, competitionId),
+    payload.scoreA,
+    payload.scoreB,
+    payload.tuningSummary
+  );
 
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ commentary: fallback });
@@ -38,11 +45,11 @@ export async function POST(request: Request) {
           {
             role: "system",
             content:
-              "Voce e um comentarista brasileiro de futebol. Gere um comentario curto, descontraido, sem incentivar apostas e sem prometer resultado."
+              "Você é um comentarista brasileiro de futebol. Gere um comentário curto, descontraído, sem incentivar apostas e sem prometer resultado."
           },
           {
             role: "user",
-            content: `Competicao: ${competition?.name ?? payload.competitionSlug}. Jogo: ${payload.teamA} ${payload.scoreA} x ${payload.scoreB} ${payload.teamB}. Probabilidades: ${payload.teamA} ${payload.probabilityA}%, empate ${payload.probabilityDraw}%, ${payload.teamB} ${payload.probabilityB}%.`
+            content: `Competição: ${competition?.name ?? payload.competitionSlug}. Jogo: ${payload.teamA} ${payload.scoreA} x ${payload.scoreB} ${payload.teamB}. Probabilidades: ${payload.teamA} ${payload.probabilityA}%, empate ${payload.probabilityDraw}%, ${payload.teamB} ${payload.probabilityB}%. ${payload.tuningSummary ?? ""}`
           }
         ],
         max_output_tokens: 120
